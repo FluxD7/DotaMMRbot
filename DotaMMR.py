@@ -1,11 +1,14 @@
 import os
 import random
 import aiosqlite
+import asyncio
+import requests
 from datetime import datetime, date
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiohttp import web
 
 # Загружаем токен из .env
 load_dotenv()
@@ -17,10 +20,10 @@ dp = Dispatcher()
 
 # Ранги
 RANKS = [
-    (0, "Рекрут 1"), (200, "Рекрут 2"), (400, "Рекрут 3"),
-    (600, "Страж 1"), (800, "Страж 2"), (1000, "Страж 3"),
-    (1200, "Рыцарь 1"), (1400, "Рыцарь 2"), (1600, "Рыцарь 3"),
-    (1800, "Герой 1"), (2000, "Герой 2"), (2200, "Герой 3"),
+    (0, "Рекрут 1"), (154, "Рекрут 2"), (308, "Рекрут 3"),
+    (770, "Страж 1"), (924, "Страж 2"), (1078, "Страж 3"),
+    (1540, "Рыцарь 1"), (1694, "Рыцарь 2"), (1848, "Рыцарь 3"),
+    (2310, "Герой 1"), (2464, "Герой 2"), (2218, "Герой 3"),
     (2400, "Легенда 1"), (2600, "Легенда 2"), (2800, "Легенда 3"),
     (3000, "Властелин 1"), (3200, "Властелин 2"), (3400, "Властелин 3"),
     (3600, "Божество 1"), (3800, "Божество 2"), (4000, "Божество 3"),
@@ -145,6 +148,31 @@ async def profile(callback: types.CallbackQuery):
     await callback.message.answer(
         f"👤 {name}\nMMR: {mmr}\nРанг: {get_rank(mmr)}\nСерия: {streak}"
     )
+
+# === ПИНГ-СЕРВЕР ===
+async def handle(request):
+    return web.Response(text="✅ Bot is alive!")
+
+async def run_web_server():
+    app = web.Application()
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    await site.start()
+    print("🌐 Web server started on port 8080")
+
+async def ping_self():
+    while True:
+        try:
+            url = os.getenv("RENDER_EXTERNAL_URL")
+            if url:
+                requests.get(url)
+                print("🔄 Pinged self to stay awake")
+        except Exception as e:
+            print(f"⚠️ Ping failed: {e}")
+        await asyncio.sleep(300)  # каждые 5 минут
+
 
 # --- Запуск ---
 async def main():
