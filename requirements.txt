@@ -1,0 +1,4 @@
+aiogram
+aiosqlite
+python-dotenv
+python-telegram-bot==21.5
